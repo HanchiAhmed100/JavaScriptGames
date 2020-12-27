@@ -1,0 +1,177 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Document</title>
+    <link rel="stylesheet" href="./assets/bootstrap/css/bootstrap.css">
+    <link rel="stylesheet" href="./assets/uikit/css/uikit.min.css">
+    <link rel="stylesheet" href="./css/app.css">
+</head>
+<body>
+    <div class="container">
+        <div class="row uk-padding">
+            <div class="col-6 offset-md-3">
+                <div class="uk-card uk-card-default">
+                    <div class="uk-card-header">
+                            <div class="uk-width-expand uk-text-center">
+                                <h3 class="uk-card-title uk-margin-remove-bottom">Memory Cards</h3>
+                                <a class="uk-text-meta uk-margin-remove-top uk-button-text" id="open_modal">
+                                    <span uk-icon="icon: pencil"></span>
+                                    Ajouter Une nouvelle carte</a>
+                            </div>
+                    </div>
+                    <div class="uk-card-body"> 
+                        <span class="uk-align-right uk-button uk-button-default" onclick="flip_Card()"><span  uk-icon="icon: forward; ratio: 0.8"></span>  Flip </span>
+                        <p id="card_question"> </p>
+                        <p id="card_response" style="display: none;"> </p>
+                    </div>
+                    <div class="uk-card-footer">
+                        <a><span class="uk-margin-small-right" uk-icon="icon: arrow-left" onclick="previous()"></span></a>
+                        <p class="uk-button uk-button-text" id="question_number"> </p>
+                        <a><span class="uk-margin-small-left" uk-icon="icon: arrow-right" onclick="next()"></span></a>
+
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div id="myModal" class="modal">
+
+        <!-- Modal content -->
+        <div class="modal-content uk-text-center">
+            <h3 class="uk-card-title uk-margin-remove-bottom">Ajouter une nouvelle carte</h3>
+            <div class="uk-margin">
+                <input class="uk-input uk-form-width-large" id="question" type="text" placeholder="Question ...">
+            </div>
+            <div class="uk-margin">
+                <input class="uk-input uk-form-width-large" id="reponse" type="text" placeholder="Reponse ...">
+            </div>
+            <div class="uk-margin">
+                <button class="uk-button uk-button-default" onclick="addCarte()">Valider</button>
+                <button class="uk-button uk-button-secondary" id="close">Annuler</button>
+            </div>
+            
+        </div>
+      
+      </div>
+    
+</body>
+<script src="./assets/uikit/js/uikit.min.js"></script>
+<script src="./assets/uikit/js/uikit-icons.min.js"></script>
+<script>
+
+var modal = document.getElementById("myModal");
+
+document.querySelector("#close").onclick = () =>{
+    modal.style.display = "none";
+}
+document.querySelector("#open_modal").onclick = () =>{
+    modal.style.display = "block"
+}
+window.onclick = (event) => {
+  if (event.target == modal) {
+    modal.style.display = "none";
+  }
+}
+
+function Carte(id , question , reponse) {
+    this.id = id
+    this.question = question;
+    this.reponse = reponse;
+}
+var cartes = []
+var current = 0
+var data = false
+
+addCarte = () =>{
+    var id = 1
+    
+    if(localStorage.getItem("elements")){
+        cartes = JSON.parse(localStorage.getItem("elements"))
+        id = cartes[cartes.length-1].id+1
+    }
+
+    var question = document.querySelector("#question").value
+    var reponse = document.querySelector("#reponse").value
+    var carte = new Carte(id, question , reponse)
+
+    cartes.push(carte)
+    localStorage.removeItem("elements")
+
+    localStorage.setItem("elements",JSON.stringify(cartes))
+    console.log(cartes.length)
+    
+    cartes.forEach(e => {
+        console.log("q : "+e.question +" , a :"+e.reponse)
+    });
+
+    document.querySelector("#question").value = ""
+    document.querySelector("#reponse").value = ""
+
+    loadElements()
+}
+
+loadElements = () => {
+    if(localStorage.getItem("elements")){
+        data = true
+        cartes = JSON.parse(localStorage.getItem("elements"))
+        document.querySelector("#card_question").innerHTML =  cartes[0].question
+        document.querySelector("#card_response").innerHTML =  "Reponse : "+cartes[0].reponse
+        document.querySelector("#question_number").innerHTML =  cartes[0].id+"/"+cartes.length
+        current = cartes[0].id
+
+    }else{
+        document.querySelector("#card_question").innerHTML = "Pas de question disponible"
+        document.querySelector("#question_number").innerHTML = "0/0"
+    }
+
+}
+previous = () =>{
+    if(data){
+        hide_reponse()
+        if( current == 0){
+            current = cartes.length
+        }
+        document.querySelector("#card_question").innerHTML =  cartes[current-1].question
+        document.querySelector("#card_response").innerHTML = "Reponse : "+ cartes[current-1].reponse
+        document.querySelector("#question_number").innerHTML =  cartes[current-1].id+"/"+cartes.length
+        current = current -1
+    }
+}
+next = () =>{
+    if(data){
+        hide_reponse()
+        if( current == cartes.length){
+            current = 0
+        }
+        current = current + 1
+        document.querySelector("#card_question").innerHTML =  cartes[current-1].question
+        document.querySelector("#card_response").innerHTML = "Reponse : "+ cartes[current-1].reponse
+        document.querySelector("#question_number").innerHTML =  cartes[current-1].id+"/"+cartes.length        
+    }
+}
+
+flip_Card = () => {
+    console.log("sqdsq")
+    if(document.querySelector("#card_response").style.display == "none"){
+        show_reponse()
+    }else{
+        hide_reponse()
+    }
+}
+hide_reponse = () =>{
+    document.querySelector("#card_response").style.display = "none"
+    document.querySelector("#card_question").style.display = "block"
+}
+show_reponse = () =>{
+    document.querySelector("#card_response").style.display = "block"
+    document.querySelector("#card_question").style.display = "none"
+}
+loadElements()
+
+
+
+</script>
+</html>
